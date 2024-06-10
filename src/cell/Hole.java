@@ -12,7 +12,7 @@ public class Hole extends Cell {
         this.depth = depth;
     }
 
-    public void covorHole() {
+    public void decrementDepth() {
         if (depth > 0) {
             depth--;
         }

@@ -16,27 +16,16 @@ public class Ticker {
         this.environment = environment;
     }
 
-    public void start(long tickTime) {
-        scheduler.scheduleAtFixedRate(() -> {
-            if (running) {
-                tick();
-            }
-        }, 0, tickTime, TimeUnit.MILLISECONDS);
-    }
-
     public void stop() {
         running = false;
         scheduler.shutdown();
     }
 
-    private synchronized void tick() {
+    public synchronized void tick(String threadName) {
         ticked = true;
         agentsCounter = 0;
         notifyAll();
-        System.out.println("Tick.");
-
-        // Process environment operations
-       // environment.processOperations();
+        System.out.println(threadName + "Tick.");
     }
 
     public synchronized void action() {
@@ -54,4 +43,9 @@ public class Ticker {
             notifyAll();
         }
     }
+
+    public Boolean running() {
+        return running;
+    }
+
 }

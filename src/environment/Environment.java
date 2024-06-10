@@ -15,6 +15,7 @@ public class Environment {
     //specific times
     private long tickTime;
     private long totalTime;
+    private long remainingTime;
 
     // Keep track of the
     // Cells on the map
@@ -37,7 +38,7 @@ public class Environment {
             }
         }
         // Order matter when we initialize the map
-        // Because we can overwrite a tile
+        // Because we can't overwrite a tile
         // If we overwrite a tile
         // The agents cannot see it
         for (Obstacle obstacle : obstacleList) {
@@ -72,10 +73,186 @@ public class Environment {
     }
     public void setTotalTime(long totalTime){
         this.totalTime = totalTime;
+        //We set also the remaining time with totalTime
+        this.remainingTime = totalTime;
     }
+    public long getTotalTime(){return this.totalTime;}
+    public long getRemainingTime(){return this.remainingTime;}
+    public void decreaseRemainingTime(long amount) {
+        this.remainingTime -= amount;
+    }
+    public long getTickTime(){return this.tickTime;}
     // Methods to retrieve data
     public List<Agent> getAgentList() {
         return agentList;
+    }
+
+    //OPERATIONS
+    public Boolean executeOperation(String sender, Operation operation){
+        switch (operation.getOperation()){
+            case "PICK":
+                return pick(sender, operation);
+            case "MOVE":
+                return move(sender, operation);
+            case "USE":
+                return use(sender, operation);
+            case "DROP":
+                return drop(sender, operation);
+            case "TRANSFER":
+                return transfer(sender, operation);
+            default:
+                System.out.println("Invalid operation");
+                return false;
+
+        }
+    }
+    public boolean pick(String sender, Operation operation){
+        Map<String, Integer> position = operation.getPosition();
+        int posX = position.get("x");
+        int posY = position.get("y");
+
+        if (!(map[posX][posY] instanceof Tile)) {
+            System.out.println("Invalid position");
+            return false;
+        }
+        for (Agent agent : agentList) {
+            // Find the agent wich started the oepration
+            if (sender.equalsIgnoreCase(agent.getName())){
+                for(Tile tile : tileList) {
+                    if (tile.getXPosition() == posX && tile.getYPosition() == posY) {
+                        if (tile.getNumberOfTiles() > 1) {
+                            Tile agentTile = new Tile(posX, posY, tile.getColor(), 1);
+                            agent.setTile(agentTile);
+                            tile.decrementNumberOfTiles();
+                        } else {
+                            Tile agentTile = new Tile(posX, posY, tile.getColor(), 1);
+                            agent.setTile(agentTile);
+                            tile.decrementNumberOfTiles();
+                            // TILE IS COVERED
+                            tileList.remove(tile);
+                        }
+                        initializeMap();
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    public boolean move(String sender, Operation operation){
+        Map<String, Integer> position = operation.getPosition();
+        int posX = position.get("x");
+        int posY = position.get("y");
+        if(!canMoveTo(operation.getPosition())) return false;
+
+        for (Agent agent : agentList) {
+            if (sender.equalsIgnoreCase(agent.getName())){
+                agent.setXPosition(posX);
+                agent.setYPosition(posY);
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean use(String sender, Operation operation){
+        for (Agent agent : agentList) {
+            if (sender.equalsIgnoreCase(agent.getName())){
+                int holeX = operation.getPosition().get("x");
+                int holeY = operation.getPosition().get("y");
+
+                switch (operation.getDirection()){
+                    case "LEFT":
+                        holeY -= 1;
+                        break;
+                    case "RIGHT":
+                        holeY += 1;
+                        break;
+                    case "DOWN":
+                        holeX += 1;
+                        break;
+                    case "UP":
+                        holeY -= 1;
+                        break;
+                    default:
+                        System.out.println("Invalid direction");
+                        return false;
+                }
+                if(!(map[holeX][holeY] instanceof Hole)) return false;
+                for(Hole hole: holeList){
+                    if(hole.getXPosition() == holeX && hole.getYPosition() == holeY){
+                        hole.decrementDepth();
+                        if(hole.getDepth() > 0){
+                            if(agent.getTile().getColor().equals(agent.getColor())){
+                                agent.setPoints(agent.getPoints() + 10);
+                            } else {
+                                agent.setPoints(agent.getPoints() + 40);
+                            }
+                            agent.setTile(null);
+                        } else {
+                            holeList.remove(hole);
+                        }
+                        initializeMap();
+                        return true;
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+    public boolean drop(String sender, Operation operation){
+        Map<String, Integer> position = operation.getPosition();
+        int posX = position.get("x");
+        int posY = position.get("y");
+        if(map[posX][posY] instanceof Hole || map[posX][posY] instanceof Obstacle){
+            System.out.println("Cannot drop on Hole or obstacle");
+            return false;
+        }
+        for (Agent agent : agentList) {
+            if (sender.equalsIgnoreCase(agent.getName())){
+                Tile tile = agent.getTile();
+                // Be carefull TO UPDATE each time
+                // Agent positions
+                tile.setXPosition(agent.getXPosition());
+                tile.setYPosition(agent.getYPosition());
+                tileList.add(tile);
+                initializeMap();
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean transfer(String sender, Operation operation){
+        for (Agent agent: agentList){
+            if(sender.equalsIgnoreCase(agent.getName())){
+                if(agent.getPoints() - operation.getTransferPoints() < 0)
+                {
+                    return false;
+                }
+                agent.setPoints(agent.getPoints() - operation.getTransferPoints());
+            }
+        }
+        for (Agent agent: agentList){
+            if (operation.getToAgent().equalsIgnoreCase(agent.getName())) {
+                agent.setPoints(agent.getPoints() + operation.getTransferPoints());
+                return true;
+            }
+        }
+        return false;
+    }
+
+//     Auxilar methods
+    private boolean canMoveTo(Map<String, Integer> position) {
+        int posX = position.get("x");
+        int posY = position.get("y");
+        if( posX >= 0 && posX < height &&
+                posY >= 0 && posY < width &&
+                !(map[posX][posY] instanceof Hole) &&
+                !(map[posX][posY] instanceof Obstacle) &&
+                !(map[posX][posY] instanceof Agent)) {
+            return true;
+        }
+        return false;
     }
     // Printing the state of the map
     public void printMap() {

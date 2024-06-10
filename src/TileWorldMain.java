@@ -18,5 +18,12 @@ public class TileWorldMain {
         }
         env.initializeMap();
         env.printMap();
+
+        // TODO: Start agents and ticker for the simulation
+        // Example:
+        // for (Agent agent : env.getAgentList()) {
+        //     new AgentThread(agent, env).start();
+        // }
+        // new Ticker(env).start(env.getTickTime());
     }
 }

@@ -17,7 +17,21 @@ public class Message {
         this.successCode = successCode;
     }
 
-
+    public Operation getOperation() {
+        return this.operation;
+    }
+    public String getSender() {
+        return this.sender;
+    }
+    public String getInReplayTo() {
+        return this.inReplayTo;
+    }
+    public String getReplayWith() {
+        return this.replayWith;
+    }
+    public String getSuccessCode() {
+        return this.successCode;
+    }
     @Override
     public String toString() {
         return "Message{" +

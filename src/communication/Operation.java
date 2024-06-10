@@ -9,8 +9,7 @@ public class Operation {
     private String direction; // Left/Right/Up/Down - used for USE
     private Map<String, Integer> position; // used for MOVE/PICK/DROP
     /*
-        @params string can be a tile
-        @params integer UNIT distance to the tile
+        //Do they need to be close?
         //Find a way to compute distance in units
      */
     private Map<String, Integer> distances; // used for the negotation Process
@@ -24,7 +23,21 @@ public class Operation {
         this.position = position;
         this.distances = distances;
     }
-
+    public String getOperation() {
+        return operation;
+    }
+    public Map<String, Integer> getPosition() {
+        return position;
+    }
+    public String getDirection(){
+        return direction;
+    }
+    public int getTransferPoints() {
+        return transferPoints;
+    }
+    public String getToAgent() {
+        return toAgent;
+    }
     @Override
     public String toString() {
         return "Operation{" +

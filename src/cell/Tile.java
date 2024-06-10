@@ -27,4 +27,8 @@ public class Tile extends Cell{
     public int getNumberOfTiles() {
         return this.numberOfTiles;
     }
+    public ColorMap getColor(){
+        return this.color;
+    }
+
 }

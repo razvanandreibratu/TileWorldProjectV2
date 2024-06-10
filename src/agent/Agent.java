@@ -8,7 +8,7 @@ public class Agent extends Cell {
     private int points = 0;
     private boolean principal = false;
     private Tile carriedTile = null;
-
+    private String name;
     // Symbol and color for representation
     private final String symbol = "A";
     private final ColorMap color;
@@ -16,6 +16,29 @@ public class Agent extends Cell {
     public Agent(int startPositionX, int startPositionY, ColorMap color) {
         super(startPositionX, startPositionY);
         this.color = color;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+    public String getName(){
+        return name;
+    }
+    // Set tile can be used FOR PICK AND DROP
+    public void setTile(Tile carriedTile){
+        this.carriedTile = carriedTile;
+    }
+    public Tile getTile(){
+        return carriedTile;
+    }
+    public ColorMap getColor(){
+        return color;
+    }
+    public void setPoints(int points){
+        this.points = points;
+    }
+    public int getPoints(){
+        return points;
     }
 
     // Inherited methods
